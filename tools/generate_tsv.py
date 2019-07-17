@@ -38,31 +38,47 @@ FIELDNAMES = ['image_id', 'image_w','image_h','num_boxes', 'boxes', 'features']
 MIN_BOXES = 10
 MAX_BOXES = 100
 
-def load_image_ids(split_name):
+# split_name -> data_dir
+def load_image_ids(data_dir):
     ''' Load a list of (path,image_id tuples). Modify this to suit your data locations. '''
     split = []
-    if split_name == 'coco_test2014':
-      with open('/data/coco/annotations/image_info_test2014.json') as f:
-        data = json.load(f)
-        for item in data['images']:
-          image_id = int(item['id'])
-          filepath = os.path.join('/data/test2014/', item['file_name'])
-          split.append((filepath,image_id))
-    elif split_name == 'coco_test2015':
-      with open('/data/coco/annotations/image_info_test2015.json') as f:
-        data = json.load(f)
-        for item in data['images']:
-          image_id = int(item['id'])
-          filepath = os.path.join('/data/test2015/', item['file_name'])
-          split.append((filepath,image_id))
-    elif split_name == 'genome':
-      with open('/data/visualgenome/image_data.json') as f:
-        for item in json.load(f):
-          image_id = int(item['image_id'])
-          filepath = os.path.join('/data/visualgenome/', item['url'].split('rak248/')[-1])
-          split.append((filepath,image_id))      
-    else:
-      print 'Unknown split'
+    # if split_name == 'coco_test2014':
+    #   with open('/data/coco/annotations/image_info_test2014.json') as f:
+    #     data = json.load(f)
+    #     for item in data['images']:
+    #       image_id = int(item['id'])
+    #       filepath = os.path.join('/data/test2014/', item['file_name'])
+    #       split.append((filepath,image_id))
+    # elif split_name == 'coco_test2015':
+    #   with open('/data/coco/annotations/image_info_test2015.json') as f:
+    #     data = json.load(f)
+    #     for item in data['images']:
+    #       image_id = int(item['id'])
+    #       filepath = os.path.join('/data/test2015/', item['file_name'])
+    #       split.append((filepath,image_id))
+    # elif split_name == 'genome':
+    #   with open('/data/visualgenome/image_data.json') as f:
+    #     for item in json.load(f):
+    #       image_id = int(item['image_id'])
+    #       filepath = os.path.join('/data/visualgenome/', item['url'].split('rak248/')[-1])
+    #       split.append((filepath,image_id))
+    # else:
+    #   print 'Unknown split'
+
+    # data_dir = ..... /keyframes
+    video_list = os.listdir(data_dir)
+    for video_num in video_list:
+        key_frame_dir = os.path.join(data_dir, video_num)
+        key_frames = os.listdir(key_frame_dir)
+        for key_frame in key_frames:
+            key_frame_num = key_frame.split('_')[1]
+            # ex) image_id = 00003_53
+            image_id = video_num+'_'+key_frame_num
+            # ex) filepath = ..... /keyframes/00003/shot00003_53.RKF.png
+            filepath = os.path.join(key_frame_dir, key_frame)
+            # split = [(filepath, image_id), ....]
+            split.append((filepath, image_id))
+
     return split
 
     
@@ -122,7 +138,8 @@ def parse_args():
                         default=None, type=str)
     parser.add_argument('--cfg', dest='cfg_file',
                         help='optional config file', default=None, type=str)
-    parser.add_argument('--split', dest='data_split',
+    # split -> data, data_split -> data_dir
+    parser.add_argument('--data', dest='data_dir',
                         help='dataset to use',
                         default='karpathy_train', type=str)
     parser.add_argument('--set', dest='set_cfgs',
@@ -139,19 +156,21 @@ def parse_args():
     
 def generate_tsv(gpu_id, prototxt, weights, image_ids, outfile):
     # First check if file exists, and if it is complete
-    wanted_ids = set([int(image_id[1]) for image_id in image_ids])
+    # wanted_ids = set([int(image_id[1]) for image_id in image_ids])
+    wanted_ids = set([image_id[1] for image_id in image_ids])
     found_ids = set()
     if os.path.exists(outfile):
         with open(outfile) as tsvfile:
             reader = csv.DictReader(tsvfile, delimiter='\t', fieldnames = FIELDNAMES)
             for item in reader:
-                found_ids.add(int(item['image_id']))
+                # found_ids.add(int(item['image_id']))
+                found_ids.add(item['image_id'])
     missing = wanted_ids - found_ids
     if len(missing) == 0:
         print 'GPU {:d}: already completed {:d}'.format(gpu_id, len(image_ids))
     else:
         print 'GPU {:d}: missing {:d}/{:d}'.format(gpu_id, len(missing), len(image_ids))
-    if len(missing) > 0:
+    if len(wanted_ids) > 0:
         caffe.set_mode_gpu()
         caffe.set_device(gpu_id)
         net = caffe.Net(prototxt, caffe.TEST, weights=weights)
@@ -211,7 +230,7 @@ if __name__ == '__main__':
     pprint.pprint(cfg)
     assert cfg.TEST.HAS_RPN
 
-    image_ids = load_image_ids(args.data_split)
+    image_ids = load_image_ids(args.data_dir)
     random.seed(10)
     random.shuffle(image_ids)
     # Split image ids between gpus
