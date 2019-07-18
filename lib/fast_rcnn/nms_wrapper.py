@@ -21,7 +21,7 @@ def soft_nms(dets, sigma=0.5, Nt=0.3, threshold=0.001, method=1):
 
 
 # Original NMS implementation
-def nms(dets, thresh, force_cpu=False):
+def nms(dets, thresh, force_cpu=True):
     """Dispatch to either CPU or GPU NMS implementations."""
     if dets.shape[0] == 0:
         return []
