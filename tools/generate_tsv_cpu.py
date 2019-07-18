@@ -7,7 +7,7 @@
 
 # Example:
 # ./tools/generate_tsv.py --gpu 0,1,2,3,4,5,6,7 --cfg experiments/cfgs/faster_rcnn_end2end_resnet.yml --def models/vg/ResNet-101/faster_rcnn_end2end/test.prototxt --out test2014_resnet101_faster_rcnn_genome.tsv --net data/faster_rcnn_models/resnet101_faster_rcnn_final.caffemodel --split coco_test2014
-# ./tools/generate_tsv.cpu.py --cfg experiments/cfgs/faster_rcnn_end2end_resnet.yml --def models/vg/ResNet-101/faster_rcnn_end2end_final/test.prototxt --out /workdir/out/out.tsv --net /workdir/faster_rcnn/resnet101_faster_rcnn_final.caffemodel --split /workdir/keyframes
+# ./tools/generate_tsv.cpu.py --cfg experiments/cfgs/faster_rcnn_end2end_resnet.yml --def models/vg/ResNet-101/faster_rcnn_end2end_final/test.prototxt --out /workdir/out/out.tsv --net /workdir/out/faster_rcnn/resnet101_faster_rcnn_final.caffemodel --data /workdir/keyframes
 
 import _init_paths
 from fast_rcnn.config import cfg, cfg_from_file
