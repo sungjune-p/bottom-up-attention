@@ -33,8 +33,10 @@ FIELDNAMES = ['image_id', 'image_w', 'image_h', 'num_boxes', 'boxes', 'features'
 
 # Settings for the number of features per image. To re-create pretrained features with 36 features
 # per image, set both values to 36.
-MIN_BOXES = 10
-MAX_BOXES = 100
+# MIN_BOXES = 10
+# MAX_BOXES = 100
+MIN_BOXES = 36
+MAX_BOXES = 36
 
 
 # split_name -> data_dir

@@ -5,8 +5,8 @@
 # Written by Navaneeth Bodla and Bharat Singh
 # ----------------------------------------------------------
 
-import pyximport
-pyximport.install()
+# import pyximport
+# pyximport.install()
 
 from fast_rcnn.config import cfg
 from nms.gpu_nms import gpu_nms
@@ -24,7 +24,7 @@ def soft_nms(dets, sigma=0.5, Nt=0.3, threshold=0.001, method=1):
 
 
 # Original NMS implementation
-def nms(dets, thresh, force_cpu=True):
+def nms(dets, thresh, force_cpu=False):
     """Dispatch to either CPU or GPU NMS implementations."""
     if dets.shape[0] == 0:
         return []
@@ -32,3 +32,13 @@ def nms(dets, thresh, force_cpu=True):
         return gpu_nms(dets, thresh, device_id=cfg.GPU_ID)
     else:
         return cpu_nms(dets, thresh)
+
+# CPU NMS implementation
+# def nms(dets, thresh, force_cpu=True):
+#     """Dispatch to either CPU or GPU NMS implementations."""
+#     if dets.shape[0] == 0:
+#         return []
+#     if cfg.USE_GPU_NMS and not force_cpu:
+#         return gpu_nms(dets, thresh, device_id=cfg.GPU_ID)
+#     else:
+#         return cpu_nms(dets, thresh)

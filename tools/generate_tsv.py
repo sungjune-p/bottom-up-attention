@@ -8,7 +8,7 @@
 
 # Example:
 # ./tools/generate_tsv.py --gpu 0,1,2,3,4,5,6,7 --cfg experiments/cfgs/faster_rcnn_end2end_resnet.yml --def models/vg/ResNet-101/faster_rcnn_end2end/test.prototxt --out test2014_resnet101_faster_rcnn_genome.tsv --net data/faster_rcnn_models/resnet101_faster_rcnn_final.caffemodel --split coco_test2014
-
+# ./tools/generate_tsv.py --gpu 0,1 --cfg experiments/cfgs/faster_rcnn_end2end_resnet.yml --def models/vg/ResNet-101/faster_rcnn_end2end_final/test.prototxt --out /workdir/out/out.tsv --net /workdir/out/faster_rcnn/resnet101_faster_rcnn_final.caffemodel --data /workdir/keyframes
 
 import _init_paths
 from fast_rcnn.config import cfg, cfg_from_file
@@ -35,8 +35,8 @@ FIELDNAMES = ['image_id', 'image_w','image_h','num_boxes', 'boxes', 'features']
 
 # Settings for the number of features per image. To re-create pretrained features with 36 features
 # per image, set both values to 36. 
-MIN_BOXES = 10
-MAX_BOXES = 100
+MIN_BOXES = 36
+MAX_BOXES = 36
 
 # split_name -> data_dir
 def load_image_ids(data_dir):
@@ -179,7 +179,7 @@ def generate_tsv(gpu_id, prototxt, weights, image_ids, outfile):
             _t = {'misc' : Timer()}
             count = 0
             for im_file,image_id in image_ids:
-                if int(image_id) in missing:
+                if image_id in missing:
                     _t['misc'].tic()
                     writer.writerow(get_detections_from_im(net, im_file, image_id))
                     _t['misc'].toc()
@@ -189,7 +189,7 @@ def generate_tsv(gpu_id, prototxt, weights, image_ids, outfile):
                               _t['misc'].average_time*(len(missing)-count)/3600)
                     count += 1
 
-                    
+
 
 
 def merge_tsvs():
